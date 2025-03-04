@@ -9,7 +9,7 @@ pygame.init() # need this, this is step one every thing after this is a game
 
 height=600
 width=800
-
+WHITE=(255,255,255)
 screen=pygame.display.set_mode((width,height)) # makes a screen
 pygame.display.set_caption("falling stuff") 
 
@@ -25,20 +25,20 @@ running=True
 class Player:# class 
     def _init_(self):
         self.x = width // 2 #Start in middle
-        self.y = height - 60# near the bottom
+        self.y = height - 60 # near the bottom
         self.PlayerWidth= 50
         self.playerHight= 50
         self.playerSpeed= 5 #speed
 
-def move(self,key):
-    if keys[pygame.K_LEFT] and self.x > 0:
-        self.x-=self.playerSpeed
-    if keys[pygame.K_RIGHT] and self.x <width - self.playerWidth:
-        self.x += self.playerSpeed 
+    def move(self,keys):
+        if keys[pygame.K_LEFT] and self.x > 0:
+            self.x-=self.playerSpeed
+        if keys[pygame.K_RIGHT] and self.x <width - self.PlayerWidth:
+            self.x += self.playerSpeed 
    
     def draw(self):
         pygame.draw.rect(screen, (0, 0, 255),
-        (self.x,self.y,self.playerwidht,self.playerhight))
+        (self.x, self.y,self.PlayerWidth ,self.playerHight))
 
 class FallingObject:
     def _init_(self):
@@ -46,7 +46,7 @@ class FallingObject:
         self.y=-50
         self.width=50
         self.height= 50
-        self.speed= random.randint(3,7)
+        self.speed= random.randint(1,9)
 
     def move(self):
         self.y +=self.speed
@@ -55,9 +55,24 @@ class FallingObject:
         pygame.draw.rect(screen, (255,0,0),(self.x,self.y,self.width,self.height))
 
 def off_screen(self):
-    return self.y>height
+    return self.y >height
 
-while running:  #makes the game run like really thats this
+
+player=Player()
+falling_object =[]
+score = 0
+lives =3
+
+
+while running: 
+    clock.tick(FPS)
+    screen.fill(WHITE)
+    
+    keys=pygame.key.get_pressed()
+    player.move(keys)
+    player.draw()
+
+     #makes the game run like really thats this
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
             running=False
