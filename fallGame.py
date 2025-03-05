@@ -1,4 +1,4 @@
-#This is Mikel's Work 
+#This is Mikel's work, MY WORK! 
 
 
 import pygame # use this to make game
@@ -7,9 +7,10 @@ import random # use this to make random falling objects
 pygame.init() # need this, this is step one every thing after this is a game 
 
 
-height=600
-width=800
+height=1000
+width=1200
 WHITE=(255,255,255)
+
 screen=pygame.display.set_mode((width,height)) # makes a screen
 pygame.display.set_caption("falling stuff") 
 
@@ -23,7 +24,7 @@ running=True
 #represent speific thing
 
 class Player:# class 
-    def _init_(self):
+    def __init__(self):
         self.x = width // 2 #Start in middle
         self.y = height - 60 # near the bottom
         self.PlayerWidth= 50
@@ -37,8 +38,7 @@ class Player:# class
             self.x += self.playerSpeed 
    
     def draw(self):
-        pygame.draw.rect(screen, (0, 0, 255),
-        (self.x, self.y,self.PlayerWidth ,self.playerHight))
+        pygame.draw.rect(screen, (0, 0, 255),(self.x, self.y,self.PlayerWidth ,self.playerHight))
 
 class FallingObject:
     def _init_(self):
@@ -48,8 +48,7 @@ class FallingObject:
         self.height= 50
         self.speed= random.randint(1,9)
 
-    def move(self):
-        self.y +=self.speed
+   
 
     def draw(self):
         pygame.draw.rect(screen, (255,0,0),(self.x,self.y,self.width,self.height))
@@ -65,6 +64,9 @@ lives =3
 
 
 while running: 
+    for event in pygame.event.get():
+        if event.type==pygame.QUIT:
+            running=False
     clock.tick(FPS)
     screen.fill(WHITE)
     
@@ -72,10 +74,17 @@ while running:
     player.move(keys)
     player.draw()
 
+
+    if random.randint(1, 30) ==1:# Lower the numbeer increase diff
+        falling_object.append(FallingObject())
+        
+    #update falling objects
+    for obj in falling_object[:]:
+        obj.move()
+        obj.draw()
+
      #makes the game run like really thats this
-    for event in pygame.event.get():
-        if event.type==pygame.QUIT:
-            running=False
+   
 
         #clock.tick(FPS)
 
