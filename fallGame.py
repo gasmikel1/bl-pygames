@@ -10,6 +10,9 @@ pygame.init() # need this, this is step one every thing after this is a game
 height=1000
 width=1200
 WHITE=(255,255,255)
+RED= (255,0,0)
+BLUE =(0,0,204)
+
 
 screen=pygame.display.set_mode((width,height)) # makes a screen
 pygame.display.set_caption("falling stuff") 
@@ -38,24 +41,24 @@ class Player:# class
             self.x += self.playerSpeed 
    
     def draw(self):
-        pygame.draw.rect(screen, (0, 0, 255),(self.x, self.y,self.PlayerWidth ,self.playerHight))
+        pygame.draw.rect(screen, BLUE,(self.x, self.y,self.PlayerWidth ,self.playerHight))
 
 class FallingObject:
-    def _init_(self):
+    def __init__(self):
         self.x= random.randint(0,width-50)
         self.y=-50
         self.width=50
         self.height= 50
         self.speed= random.randint(1,9)
-
-   
+    
+    def move(self):
+        self.y += self.speed
 
     def draw(self):
-        pygame.draw.rect(screen, (255,0,0),(self.x,self.y,self.width,self.height))
+        pygame.draw.rect(screen, RED, (self.x, self.y, self.width, self.height))
 
-def off_screen(self):
-    return self.y >height
-
+    def off_screen(self):
+        return self.y > height
 
 player=Player()
 falling_object =[]
@@ -80,13 +83,39 @@ while running:
         
     #update falling objects
     for obj in falling_object[:]:
-        obj.move()
-        obj.draw()
+            obj.move()
+            obj.draw()
+
+    if ( obj.x < player.x + player.width and
+            obj.x + obj.width > player.x and
+            obj.y < player.y + player.height and
+            obj.y + obj.height > player.y):
+            lives -= 1
+            falling_objects.remove(obj)  # Remove object on collision
+
+        # Remove objects off screen
+    elif obj.off_screen():
+            falling_objects.remove(obj)
+            score += 1  # Increase score for avoiding
+
+    # Display score and lives
+    font = pygame.font.Font(None, 36)
+    score_text = font.render(f"Score: {score}", True, (0, 0, 0))
+    lives_text = font.render(f"Lives: {lives}", True, (255, 0, 0))
+    screen.blit(score_text, (10, 10))
+    screen.blit(lives_text, (10, 40))
+
+    # Check game over
+    if lives <= 0:
+        game_over_text = font.render("Game Over!", True, (0, 0, 0))
+        screen.blit(game_over_text, (WIDTH // 2 - 50, HEIGHT // 2))
+        pygame.display.update()
+        pygame.time.delay(2000)  # Pause before quitting
+        running = False
+
 
      #makes the game run like really thats this
-   
-
-        #clock.tick(FPS)
+    pygame.display.update()
 
 pygame.quit()
 
