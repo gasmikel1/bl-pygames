@@ -45,7 +45,7 @@ class Player:# class
 
 class FallingObject:
     def __init__(self):
-        self.x= random.randint(0,width-50)
+        self.x= random.randint(0,width,-50)
         self.y=-50
         self.width=50
         self.height= 50
@@ -64,6 +64,7 @@ player=Player()
 falling_object =[]
 score = 0
 lives =3
+running = True
 
 
 while running: 
@@ -86,16 +87,17 @@ while running:
             obj.move()
             obj.draw()
 
-    if ( obj.x < player.x + player.width and
-            obj.x + obj.width > player.x and
-            obj.y < player.y + player.height and
-            obj.y + obj.height > player.y):
-            lives -= 1
-            falling_objects.remove(obj)  # Remove object on collision
+      # Check for collision
+    if (obj.x < player.x + player.width and
+        obj.x + obj.width > player.x and
+        obj.y < player.y + player.height and
+        obj.y + obj.height > player.y):
+        lives -= 1
+        falling_object.remove(obj)  # Remove object on collision
 
         # Remove objects off screen
     elif obj.off_screen():
-            falling_objects.remove(obj)
+            falling_object.remove(obj)
             score += 1  # Increase score for avoiding
 
     # Display score and lives
@@ -107,11 +109,12 @@ while running:
 
     # Check game over
     if lives <= 0:
-        game_over_text = font.render("Game Over!", True, (0, 0, 0))
-        screen.blit(game_over_text, (WIDTH // 2 - 50, HEIGHT // 2))
-        pygame.display.update()
-        pygame.time.delay(2000)  # Pause before quitting
-        running = False
+            game_over_text = font.render("Game Over!", True, (0, 0, 0))
+            screen.blit(game_over_text, (width // 2 - 50, height // 2))
+            pygame.display.update()
+            pygame.time.delay(2000)  # Pause before quitting
+            running = False
+
 
 
      #makes the game run like really thats this
