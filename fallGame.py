@@ -45,11 +45,11 @@ class Player:# class
 
 class FallingObject:
     def __init__(self):
-        self.x= random.randint(0,width,-50)
+        self.x= random.randint(0,width-50)
         self.y=-50
         self.width=50
         self.height= 50
-        self.speed= random.randint(1,9)
+        self.speed= random.randint(5,15)
     
     def move(self):
         self.y += self.speed
@@ -88,17 +88,17 @@ while running:
             obj.draw()
 
       # Check for collision
-    if (obj.x < player.x + player.width and
-        obj.x + obj.width > player.x and
-        obj.y < player.y + player.height and
-        obj.y + obj.height > player.y):
-        lives -= 1
-        falling_object.remove(obj)  # Remove object on collision
+            if (obj.x < player.x + player.PlayerWidth and
+                obj.x + obj.width > player.x and
+                obj.y < player.y + player.playerHight and
+                obj.y + obj.height > player.y):
+                lives -= 1
+                falling_object.remove(obj)  # Remove object on collision
 
         # Remove objects off screen
-    elif obj.off_screen():
-            falling_object.remove(obj)
-            score += 1  # Increase score for avoiding
+            elif obj.off_screen():
+                falling_object.remove(obj)
+                score += 1  # Increase score for avoiding
 
     # Display score and lives
     font = pygame.font.Font(None, 36)
