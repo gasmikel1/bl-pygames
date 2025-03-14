@@ -49,7 +49,7 @@ class FallingObject:
         self.y=-50
         self.width=50
         self.height= 50
-        self.speed= random.randint(5,15)
+        self.speed= random.randint(5,200)
     
     def move(self):
         self.y += self.speed
@@ -79,7 +79,7 @@ while running:
     player.draw()
 
 
-    if random.randint(1, 30) ==1:# Lower the numbeer increase diff
+    if random.randint(1, 3) ==1:# Lower the numbeer increase diff
         falling_object.append(FallingObject())
         
     #update falling objects
