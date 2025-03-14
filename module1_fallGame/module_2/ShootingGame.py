@@ -11,7 +11,7 @@ pygame.display.set_caption("shooting game")
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__() # if contrals the data in data object. Good to have
-        self.image =pygame.surface((50,50))
+        self.image =pygame.Surface((50,50))
         self.image.fill((255,255,255))      #The hit box
         self.rect=self.image.get_rect()
         self.rect.center=(400,550)
