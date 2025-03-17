@@ -1,5 +1,5 @@
 import pygame
-
+import random
 pygame.init() #from here on out its a game
 
 FPS = 60
@@ -15,7 +15,8 @@ class Player(pygame.sprite.Sprite):
         self.image.fill((255,255,255))      #The hit box
         self.rect=self.image.get_rect()
         self.rect.center=(400,550)
-    
+        self.speed=5
+
     def update(self):
         keys=pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
@@ -23,6 +24,10 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_RIGHT]:
             self.rect.x+=5
 
+    def shoot(self):
+        bullet= Bullet(self.rect.centerx, self.rect.top)
+        all_sprites.add(bullet)
+        bullets.add(bullet)
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self,x,y):
@@ -31,6 +36,7 @@ class Bullet(pygame.sprite.Sprite):
         self.image.fill((255,0,0))
         self.rect=self.image.get_rect()
         self.rect.center=(x,y)
+        self.speed=7
 
 def update(self):
     self.rect.y-= 5
@@ -45,7 +51,8 @@ class Enemy(pygame.sprite.Sprite):
         self.rect=self.image.get_rect()
         self.rect.x= random.randint(0,750)
         self.rect.y = random.randint(-200<-50)
-
+        self.speed= random.randint(1,3)
+    
     def update(self):
         self.rect.y +=3
         if self.rect.top>600:
@@ -68,7 +75,6 @@ for _ in rang(5):
     enemies.add(enemy)
 
 
-
 running=True
 while running:
     clock.tick(FPS)
@@ -79,6 +85,16 @@ while running:
             if event.key== pygame.K_SPACE:
                 player.shoot()
 
-all_sprites.update()
-pygame.quit()
 
+all_sprites.update()
+hits=pygame.sprite.groupcollide(bullets,enemies,True,True)
+for hit in hits:
+    Enemy()
+    all_sprites.add(enemy)
+    enemies.add(enemy)
+
+    screen.fill(BLACK)
+    all_sprites
+    pygame.display.flip()
+    
+pygame.quit()
