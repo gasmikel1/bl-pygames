@@ -43,7 +43,7 @@ class FallingObject:
         self.y = -OBJECT_HEIGHT
         self.width = OBJECT_WIDTH
         self.height = OBJECT_HEIGHT
-        self.speed = random.randint(3, 7)
+        self.speed = random.randint(3,7)
 
     def move(self):
         self.y += self.speed

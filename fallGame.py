@@ -11,7 +11,8 @@ height=1000
 width=1200
 WHITE=(255,255,255)
 RED= (255,0,0)
-BLUE =(0,0,204)
+BLUE = pygame.image.load('perfect.jpeg')
+
 
 
 screen=pygame.display.set_mode((width,height)) # makes a screen
@@ -21,6 +22,7 @@ clock= pygame.time.Clock() #games run on frames
 
 FPS= 60 # game updates 60 times every second
 running=True
+carImg = pygame.image.load('perfect.jpeg')
 
 # step 2. make user character object
 # a object is a construct that holds both functions and data that 
@@ -33,6 +35,7 @@ class Player:# class
         self.PlayerWidth= 50
         self.playerHight= 50
         self.playerSpeed= 5 #speed
+        self.image = pygame.image.load('perfect.jpeg')
 
     def move(self,keys):
         if keys[pygame.K_LEFT] and self.x > 0:
@@ -76,7 +79,7 @@ while running:
     
     keys=pygame.key.get_pressed()
     player.move(keys)
-    player.draw()
+    player.draw(carImg)
 
 
     if random.randint(1, 30) ==1:# Lower the numbeer increase diff
