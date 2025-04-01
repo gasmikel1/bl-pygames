@@ -29,7 +29,7 @@ class Player:
         self.rect = pygame.Rect(x, y, self.width, self.height)
         self.vel = [0, 0]
         self.speed = 5
-        self.jump_power = -15
+        self.jump_power = -20
         self.gravity = 1
         self.on_ground = False
 
@@ -78,8 +78,8 @@ platforms = [
     pygame.Rect(300, HEIGHT - 150, 100, 20),
     pygame.Rect(500, HEIGHT - 250, 100, 20),
     pygame.Rect(750, HEIGHT - 180, 150, 20),
-    pygame.Rect(1000, HEIGHT - 300, 100, 20)
-]
+    pygame.Rect(1000, HEIGHT - 300, 100, 20),
+    ]
 
 # ============================
 # Step 5: Create Player and Enemies
