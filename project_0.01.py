@@ -15,6 +15,7 @@ while running:
         pygame.display.set_caption("0.000000001")
     screen.fill((255,255,255))
     pygame.display.flip()
+
 #==============================================
 WHITE = (255, 255, 255)
 BLUE = (66, 135, 245)
@@ -41,7 +42,7 @@ class Player:
         self.jump_power= -20
         self.gravity=1
         self.on_ground=False
-        self.speed= 7
+        self.speed = 7
 
 #=========================================
 
@@ -55,18 +56,19 @@ class Enemy:
 
     def draw(self, surface, scroll_x):
         pygame.draw.rect(surface, RED, (self.rect.x - scroll_x, self.rect.y, self.rect.width, self.rect.height))
-
+        enemies = [Enemy(600, HEIGHT - 100), Enemy(1100, HEIGHT - 340)]
 #=====================================================
     def handle_input(self,keys):
-        if keys[pygame.K_LEFT]:
-             self.vel[0] = -self.speed
-        elif keys[pygame.K_RIGHT]:
-             self.vel[0] = +self.speed 
-        else:
-            self.vel[0] = 0
-        if keys[pygame.K_SPACE] and self.on_ground:
-            self.vel[1] = self.jump_power
-            self.on_ground = False
+            if keys[pygame.K_LEFT]:
+                self.vel[0] = -self. speed
+            elif keys[pygame.K_RIGHT]:
+             self.vel[0] = +self. speed 
+            else:
+                self.vel[0] = 0
+            if keys[pygame.K_SPACE] and self.on_ground:
+                self.vel[1] = self. jump_power
+                self.on_ground = False
+            
 #======================================================
     def apply_physics(self, platforms):
         self.vel[1] += self.gravity
@@ -79,7 +81,7 @@ class Enemy:
     def draw(self, surface, scroll_y):
         pygame.draw.rect(surface, BLUE, (self.rect.y - scroll_y, self.rect.y, self.width, self.height))
 #======================================================
-platforms = [
+    platforms = [
     pygame.Rect(0, HEIGHT - 40, 2000, 40),
     pygame.Rect(300, HEIGHT - 150, 100, 20),
     pygame.Rect(500, HEIGHT - 250, 100, 20),
@@ -87,26 +89,24 @@ platforms = [
     pygame.Rect(1000, HEIGHT - 300, 100, 20),
     ]
 #=======================================================
-player = Player(100, HEIGHT - 150)
-enemies = [Enemy(600, HEIGHT - 100), Enemy(1100, HEIGHT - 340)]
+    player = Player(100, HEIGHT - 150)
 #=======================================================
-keys = pygame.key.get_pressed()
-player.handle_input(keys)
+    keys = pygame.key.get_pressed()
+    player.handle_input(keys)
 
 #=======================================================
-player.apply_physics(platforms)
-
-#=======================================================
-for enemy in enemies[:]:
-        if player.rect.colliderect(enemy.rect):
-            if player.vel[1] > 0 and player.rect.bottom <= enemy.rect.top + player.vel[1]:
-                enemies.remove(enemy)
-                player.vel[1] = player.jump_power // 2  # Bounce
+    player.apply_physics(platforms)
+    for enemy in enemies[:]:
+            if player.rect.colliderect(enemy.rect):
+                if player.vel[1] > 0 and player.rect.bottom <= enemy.rect.top + player.vel[1]:
+                    enemies.remove(enemy)
+                    player.vel[1] = player.jump_power // 2  # Bounce
 #==================================================
-for enemy in enemies:
-        enemy.draw(screen, scroll_x)
+    for enemy in enemies:
+            enemy.draw(screen, scroll_x)
 #==================================================
-player.draw(screen, scroll_x)
-player.draw(screen,scroll_y)
+    player.draw(screen, scroll_x)
+    player.draw(screen,scroll_y)
 #=================================================
+
 pygame.quit()
