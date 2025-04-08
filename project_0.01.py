@@ -21,6 +21,9 @@ RED = (255, 0, 0)
 
 class Player:
     def __init__(self, x, y):
+        super().__init__() # if contrals the data in data object. Good to have
+        self.image =pygame.Surface((50,50))
+        self.attack_cooldown = 0
         self.width = 40
         self.height = 60
         self.rect = pygame.Rect(x, y, self.width, self.height)
@@ -29,6 +32,7 @@ class Player:
         self.jump_power = -20
         self.gravity = 1
         self.on_ground = False
+        # self.flip = flip
 
     def handle_input(self, keys):
         if keys[pygame.K_a]:
@@ -60,6 +64,14 @@ class Player:
     def draw(self, surface, scroll_x):
         pygame.draw.rect(surface, BLUE, (self.rect.x - scroll_x, self.rect.y, self.width, self.height))
 
+    def attack(self, target):
+        if self.attack_cooldown == 0:
+        #execute attack
+            self.attacking = True
+            attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width), self.rect.y, 2 * self.rect.width, self.rect.height)
+        if attacking_rect.colliderect(target.rect):
+            target.health -= 10
+            target.hit = True
 
 class Enemy:
     def __init__(self, x, y, width=40, height=40):
@@ -67,7 +79,6 @@ class Enemy:
 
     def draw(self, surface, scroll_x):
         pygame.draw.rect(surface, RED, (self.rect.x - scroll_x, self.rect.y, self.rect.width, self.rect.height))
-
 
 # ============================
 # Step 4: Platforms
@@ -86,6 +97,13 @@ platforms = [
 player = Player(100, HEIGHT - 150)
 enemies = [Enemy(600, HEIGHT - 100), Enemy(1100, HEIGHT - 340)]
 
+# all_sprites=pygame.sprite.Group()
+# all_sprites.add(player)
+
+# enemies =pygame.sprite.Group()
+
+# attacks=pygame.sprite.Group()
+
 # ============================
 # Step 6: Game Loop
 # ============================
@@ -101,7 +119,9 @@ while running:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_e:
+                player.attack(enemies)
     # ============================
     # Step 8: Input
     # ============================
@@ -121,7 +141,7 @@ while running:
             if player.vel[1] > 0 and player.rect.bottom <= enemy.rect.top + player.vel[1]:
                 enemies.remove(enemy)
                 player.vel[1] = player.jump_power // 2  # Bounce
-
+       
     # ============================
     # Step 11: Camera Scroll
     # ============================
