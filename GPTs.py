@@ -21,9 +21,9 @@ RED = (255, 0, 0)
 
 class Player:
     def __init__(self, x, y):
-        self.image =pygame.Surface((50,50))
+        self.image = pygame.Surface((50,50))
         self.attack_cooldown = 0
-        self.attack_delay = 50  # 500ms cooldown between attacks
+        self.attack_delay = 5  # 500ms cooldown between attacks
         self.width = 40
         self.height = 60
         self.rect = pygame.Rect(x, y, self.width, self.height)
@@ -32,9 +32,10 @@ class Player:
         self.jump_power = -20
         self.gravity = 1
         self.on_ground = False
-        #self.attack=False
-
+        self.attack = False  # Attack flag
+        
     def handle_input(self, keys):
+        # Handle player movement
         if keys[pygame.K_a]:
             self.vel[0] = -self.speed
         elif keys[pygame.K_d]:
@@ -42,16 +43,20 @@ class Player:
         else:
             self.vel[0] = 0
 
+        # Handle jumping
         if keys[pygame.K_SPACE] and self.on_ground:
             self.vel[1] = self.jump_power
             self.on_ground = False
-        elif keys[pygame.K_e] and self.attack_cooldown == 0:
-            self.attack_cooldown = self.attack_delay
-            self.attack=True
+
+        # Handle attack
+        if keys[pygame.K_e] and self.attack_cooldown == 0:  # Attack on key press
+            self.attack = True
+            self.attack_cooldown = self.attack_delay  # Start cooldown
         else:
-            self.attack=False
+            self.attack = False
 
     def apply_physics(self, platforms):
+        # Apply gravity and movement
         self.vel[1] += self.gravity
         self.rect.x += self.vel[0]
         self.rect.y += self.vel[1]
@@ -68,13 +73,15 @@ class Player:
         pygame.draw.rect(surface, BLUE, (self.rect.x - scroll_x, self.rect.y, self.width, self.height))
 
     def attack_area(self):
-        if self.vel[0] >= 0:
+        # Define the attack area depending on the direction of movement
+        if self.vel[0] >= 0:  # Moving right
             attack_rect = pygame.Rect(self.rect.right, self.rect.y + 10, 40, self.height - 20)
-        else: 
-            attack_rect = pygame.Rect(self.rect.left - 40 , self.rect.y + 10, 40, self.height - 20)
+        else:  # Moving left
+            attack_rect = pygame.Rect(self.rect.left - 40, self.rect.y + 10, 40, self.height - 20)
         return attack_rect
     
     def update(self):
+        # Cooldown countdown
         if self.attack_cooldown > 0:
             self.attack_cooldown -= 1
 
@@ -143,9 +150,8 @@ while running:
                 player.vel[1] = player.jump_power // 2  # Bounce
        
         if attack_rect:
-            for enemy in enemies[:]:
-                if attack_rect.colliderect(enemy.rect):
-                    enemies.remove(enemy)  
+            if attack_rect.colliderect(enemy.rect):
+                enemies.remove(enemy)  # Remove the enemy when hit by attack
 
     # ============================
     # Step 11: Camera Scroll
