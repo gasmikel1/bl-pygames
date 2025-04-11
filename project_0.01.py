@@ -23,7 +23,7 @@ class Player:
     def __init__(self, x, y):
         self.image =pygame.Surface((50,50))
         self.attack_cooldown = 0
-        self.attack_delay = 50  # 500ms cooldown between attacks
+        self.attack_delay =80  # 500ms cooldown between attacks
         self.width = 40
         self.height = 60
         self.rect = pygame.Rect(x, y, self.width, self.height)
@@ -81,10 +81,22 @@ class Player:
 class Enemy:
     def __init__(self, x, y, width=40, height=40):
         self.rect = pygame.Rect(x, y, width, height)
+        self.speed = 2
+        self.direction = 1
+        self.movement_range = 100
+        self.start_x = x
+    def move(self):
+        self.rect.x += self.speed * self.direction
+        if abs(self.rect.x - self.start_x) >= self.movement_range:
+            self.direction *= -1
 
     def draw(self, surface, scroll_x):
         pygame.draw.rect(surface, RED, (self.rect.x - scroll_x, self.rect.y, self.rect.width, self.rect.height))
 
+    
+        
+        # Change direction at the bounds
+        
 # ============================
 # Step 4: Platforms
 # ============================
@@ -155,14 +167,17 @@ while running:
     # ============================
     # Step 12: Drawing
     # ============================
+    for enemy in enemies:
+        enemy.move()
+        enemy.draw(screen, scroll_x)
+    
     for plat in platforms:
         pygame.draw.rect(screen, GREEN, (plat.x - scroll_x, plat.y, plat.width, plat.height))
 
-    for enemy in enemies:
-        enemy.draw(screen, scroll_x)
 
     if attack_rect:
         pygame.draw.rect(screen, (0, 0, 0), (attack_rect.x - scroll_x, attack_rect.y, attack_rect.width, attack_rect.height), 2)
+    
     
     player.draw(screen, scroll_x)
     player.update()  # Reduce attack cooldown
