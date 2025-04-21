@@ -178,8 +178,25 @@ while running:
 
     if attack_rect:
         pygame.draw.rect(screen, (0, 0, 0), (attack_rect.x - scroll_x, attack_rect.y, attack_rect.width, attack_rect.height), 2)
-    
-    
+   
+    if (enemy.x < player.x + player.Playerwidth and             
+                enemy.x + enemy.width > player.x and
+                enemy.y < player.y + player.playerhight and
+                enemy.y + enemy.height > player.y):
+                lives -= 1
+                font = pygame.font.Font(None, 36)
+                score_text = font.render(f"Score: {score}", True, (0, 0, 0))
+                lives_text = font.render(f"Lives: {lives}", True, (255, 0, 0))
+                screen.blit(score_text, (10, 10))
+                screen.blit(lives_text, (10, 40))
+
+    # Check game over
+    if lives <= 0:
+        game_over_text = font.render("Game Over!", True, (0, 0, 0))
+        screen.blit(game_over_text, (WIDTH // 2 - 50, HEIGHT // 2))
+        pygame.display.update()
+        pygame.time.delay(2000)  # Pause before quitting
+        running = False
     player.draw(screen, scroll_x)
     player.update()  # Reduce attack cooldown
 
