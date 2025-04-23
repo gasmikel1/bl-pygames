@@ -85,14 +85,35 @@ class Enemy:
         self.direction = 1
         self.movement_range = 100
         self.start_x = x
-    def move(self):
-        self.rect.x += self.speed * self.direction
-        if abs(self.rect.x - self.start_x) >= self.movement_range:
-            self.direction *= -1
+        self.patrol_speed = 2  # Patrolling speed
+        self.chase_speed = 4  # Chasing speed
+        self.chase_range = 100  # Distance at which enemy starts chasing player
+        self.attack_range = 50  # Distance to attack player
+        self.target = None  # The target (player)
+    
+    def move(self, player):
+        # Get the direction of movement based on patrolling or chasing
+        if self.target:
+            # Chase the player
+            if self.rect.x < self.target.rect.x - self.attack_range:
+                self.rect.x += self.chase_speed  # Move towards the player
+            elif self.rect.x > self.target.rect.x + self.attack_range:
+                self.rect.x -= self.chase_speed  # Move towards the player
+        else:
+            # Patrolling logic
+            self.rect.x += self.speed * self.direction
+            if abs(self.rect.x - self.start_x) >= self.movement_range:
+                self.direction *= -1  # Change direction
 
     def draw(self, surface, scroll_x):
         pygame.draw.rect(surface, RED, (self.rect.x - scroll_x, self.rect.y, self.rect.width, self.rect.height))
-
+    
+    def check_for_player(self, player):
+        # Check if the player is within the chase range
+        if abs(self.rect.centerx - player.rect.centerx) <= self.chase_range:
+            self.target = player  # Start chasing the player
+        else:
+            self.target = None
     
         
         # Change direction at the bounds
@@ -150,6 +171,7 @@ while running:
     # Step 10: Enemy Collision
     # ============================
     for enemy in enemies[:]:
+        enemy.check_for_player(player) 
         if player.rect.colliderect(enemy.rect):
             if player.vel[1] > 0 and player.rect.bottom <= enemy.rect.top + player.vel[1]:
                 enemies.remove(enemy)
@@ -159,7 +181,6 @@ while running:
             for enemy in enemies[:]:
                 if attack_rect.colliderect(enemy.rect):
                     enemies.remove(enemy)  
-
     # ============================
     # Step 11: Camera Scroll
     # ============================
@@ -168,12 +189,15 @@ while running:
     # ============================
     # Step 12: Drawing
     # ============================
-    for enemy in enemies:
-        enemy.move()
-        enemy.draw(screen, scroll_x)
     
+    for enemy in enemies:
+            enemy.move(player)  # Pass player to move method to chase
+            enemy.draw(screen, scroll_x)
     for plat in platforms:
-        pygame.draw.rect(screen, GREEN, (plat.x - scroll_x, plat.y, plat.width, plat.height))
+   
+    
+        for plat in platforms:
+            pygame.draw.rect(screen, GREEN, (plat.x - scroll_x, plat.y, plat.width, plat.height))
 
 
     if attack_rect:
