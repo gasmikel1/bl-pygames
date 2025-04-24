@@ -21,6 +21,7 @@ RED = (255, 0, 0)
 
 class Player:
     def __init__(self, x, y):
+        self.health = 100 
         self.image =pygame.Surface((50,50))
         self.attack_cooldown = 0
         self.attack_delay =80  # 500ms cooldown between attacks
@@ -63,6 +64,13 @@ class Player:
                     self.rect.bottom = plat.top
                     self.vel[1] = 0
                     self.on_ground = True
+    
+    def take_damage(self, amount):
+        self.health -= amount
+        print(f"Player hit! Health: {self.health}")
+        if self.health <= 0:
+            print("Game Over")  # You can add a game over screen here
+       
 
     def draw(self, surface, scroll_x):
         pygame.draw.rect(surface, BLUE, (self.rect.x - scroll_x, self.rect.y, self.width, self.height))
@@ -90,7 +98,11 @@ class Enemy:
         self.chase_range = 100  # Distance at which enemy starts chasing player
         self.attack_range = 50  # Distance to attack player
         self.target = None  # The target (player)
-    
+        self.health=2
+   
+
+
+
     def move(self, player):
         # Get the direction of movement based on patrolling or chasing
         if self.target:
@@ -110,24 +122,39 @@ class Enemy:
     
     def check_for_player(self, player):
         # Check if the player is within the chase range
+        
         if abs(self.rect.centerx - player.rect.centerx) <= self.chase_range:
             self.target = player  # Start chasing the player
         else:
             self.target = None
     
+            self.attack_cooldown = 0
+            self.attack_delay = 60  # 1 second at 60 FPS
+            self.damage = 1
+
+    def update(self, player):
+        # Attack if close enough and cooldown allows
+        if self.rect.colliderect(player.rect) and self.attack_cooldown == 0:
+            player.take_damage(self.damage)
+            self.attack_cooldown = self.attack_delay
         
+        # Reduce cooldown each frame
+        if self.attack_cooldown > 0:
+            self.attack_cooldown -= 1
         # Change direction at the bounds
-        
+            self.vel_y = 0
+            self.gravity = 1
+            self.on_ground = False
 # ============================
 # Step 4: Platforms
 # ============================
 platforms = [
-    pygame.Rect(0, HEIGHT - 40, 2000, 40),
-    pygame.Rect(300, HEIGHT - 150, 100, 20),
-    pygame.Rect(500, HEIGHT - 250, 100, 20),
-    pygame.Rect(750, HEIGHT - 180, 150, 20),
-    pygame.Rect(1000, HEIGHT - 300, 100, 20),
-    pygame.Rect(0,HEIGHT-50,100,2),
+    pygame.Rect(0, HEIGHT - 40, 2000, 40), # ground
+    pygame.Rect(300, HEIGHT - 150, 100, 20), # plate form 1
+    pygame.Rect(500, HEIGHT - 250, 100, 20),# plate form 2
+    pygame.Rect(750, HEIGHT - 180, 150, 20), # plate form 3
+    pygame.Rect(1000, HEIGHT - 300, 100, 20), # plate form 4
+    pygame.Rect(0,HEIGHT-500,10,20),
     ]
 
 # ============================
@@ -172,6 +199,7 @@ while running:
     # ============================
     for enemy in enemies[:]:
         enemy.check_for_player(player) 
+        enemy.update(player)
         if player.rect.colliderect(enemy.rect):
             if player.vel[1] > 0 and player.rect.bottom <= enemy.rect.top + player.vel[1]:
                 enemies.remove(enemy)
@@ -191,6 +219,7 @@ while running:
     # ============================
     
     for enemy in enemies:
+           
             enemy.move(player)  # Pass player to move method to chase
             enemy.draw(screen, scroll_x)
     for plat in platforms:
@@ -203,7 +232,7 @@ while running:
     if attack_rect:
         pygame.draw.rect(screen, (0, 0, 0), (attack_rect.x - scroll_x, attack_rect.y, attack_rect.width, attack_rect.height), 2)
     
-    
+
     player.draw(screen, scroll_x)
     player.update()  # Reduce attack cooldown
 
