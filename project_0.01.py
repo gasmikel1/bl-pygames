@@ -6,7 +6,7 @@ WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 pygame.display.set_caption("cool name!")
-
+game_over=False
 # ============================
 # Step 2: Define Colors
 # ============================
@@ -18,6 +18,8 @@ RED = (255, 0, 0)
 # ============================
 # Step 3: Classes
 # ============================
+
+
 
 class Player:
     def __init__(self, x, y):
@@ -34,6 +36,8 @@ class Player:
         self.gravity = 1
         self.on_ground = False
         #self.attack=False
+       # self.damadddge_delay=1
+
 
     def handle_input(self, keys):
         if keys[pygame.K_a]:
@@ -70,7 +74,9 @@ class Player:
         print(f"Player hit! Health: {self.health}")
         if self.health <= 0:
             print("Game Over")  # You can add a game over screen here
-       
+            global game_over
+            game_over = True
+            self.damage_cooldown = self.damage_delay
 
     def draw(self, surface, scroll_x):
         pygame.draw.rect(surface, BLUE, (self.rect.x - scroll_x, self.rect.y, self.width, self.height))
@@ -85,7 +91,7 @@ class Player:
     def update(self):
         if self.attack_cooldown > 0:
             self.attack_cooldown -= 1
-
+           
 class Enemy:
     def __init__(self, x, y, width=40, height=40):
         self.rect = pygame.Rect(x, y, width, height)
@@ -98,7 +104,7 @@ class Enemy:
         self.chase_range = 100  # Distance at which enemy starts chasing player
         self.attack_range = 50  # Distance to attack player
         self.target = None  # The target (player)
-        self.health=2
+        #self.health=2
    
 
 
@@ -130,7 +136,7 @@ class Enemy:
     
             self.attack_cooldown = 0
             self.attack_delay = 60  # 1 second at 60 FPS
-            self.damage = 1
+            self.damage = 10
 
     def update(self, player):
         # Attack if close enough and cooldown allows
@@ -154,7 +160,7 @@ platforms = [
     pygame.Rect(500, HEIGHT - 250, 100, 20),# plate form 2
     pygame.Rect(750, HEIGHT - 180, 150, 20), # plate form 3
     pygame.Rect(1000, HEIGHT - 300, 100, 20), # plate form 4
-    pygame.Rect(0,HEIGHT-500,10,20),
+    pygame.Rect(2000,HEIGHT- 5,106,200),
     ]
 
 # ============================
@@ -168,9 +174,15 @@ enemies = [Enemy(600, HEIGHT - 100), Enemy(1100, HEIGHT - 340)]
 # ============================
 running = True
 while running:
+    if game_over:
+        print("Game Over")
+        pygame.quit()
+        sys.exit()
     clock.tick(60)
     screen.fill(WHITE)
 
+
+ 
     # ============================
     # Step 7: Event Handling
     # ============================
@@ -233,7 +245,17 @@ while running:
         pygame.draw.rect(screen, (0, 0, 0), (attack_rect.x - scroll_x, attack_rect.y, attack_rect.width, attack_rect.height), 2)
     
 
+   
+    #=========
+    #game over
+    #=========
+   
+
+
+
+
+
+
     player.draw(screen, scroll_x)
     player.update()  # Reduce attack cooldown
-
     pygame.display.flip()
