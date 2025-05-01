@@ -6,27 +6,19 @@ WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 pygame.display.set_caption("cool name!")
-game_over=False
-# ============================
-# Step 2: Define Colors
-# ============================
+game_over = False
+
 WHITE = (255, 255, 255)
 BLUE = (66, 135, 245)
 GREEN = (0, 200, 0)
 RED = (255, 0, 0)
 
-# ============================
-# Step 3: Classes
-# ============================
-
-
-
 class Player:
     def __init__(self, x, y):
         self.health = 100 
-        self.image =pygame.Surface((50,50))
+        self.image = pygame.Surface((50, 50))
         self.attack_cooldown = 0
-        self.attack_delay =80  # 500ms cooldown between attacks
+        self.attack_delay = 80
         self.width = 40
         self.height = 60
         self.rect = pygame.Rect(x, y, self.width, self.height)
@@ -35,9 +27,7 @@ class Player:
         self.jump_power = -20
         self.gravity = 1
         self.on_ground = False
-        #self.attack=False
-       # self.damadddge_delay=1
-
+        self.attack = False
 
     def handle_input(self, keys):
         if keys[pygame.K_a]:
@@ -52,9 +42,9 @@ class Player:
             self.on_ground = False
         elif keys[pygame.K_e] and self.attack_cooldown == 0:
             self.attack_cooldown = self.attack_delay
-            self.attack=True
+            self.attack = True
         else:
-            self.attack=False
+            self.attack = False
 
     def apply_physics(self, platforms):
         self.vel[1] += self.gravity
@@ -73,25 +63,23 @@ class Player:
         self.health -= amount
         print(f"Player hit! Health: {self.health}")
         if self.health <= 0:
-            print("Game Over")  # You can add a game over screen here
+            print("Game Over")
             global game_over
             game_over = True
-            self.damage_cooldown = self.damage_delay
 
     def draw(self, surface, scroll_x):
         pygame.draw.rect(surface, BLUE, (self.rect.x - scroll_x, self.rect.y, self.width, self.height))
 
     def attack_area(self):
         if self.vel[0] >= 0:
-            attack_rect = pygame.Rect(self.rect.right, self.rect.y + 10, 40, self.height - 20)
-        else: 
-            attack_rect = pygame.Rect(self.rect.left - 40 , self.rect.y + 10, 40, self.height - 20)
-        return attack_rect
+            return pygame.Rect(self.rect.right, self.rect.y + 10, 40, self.height - 20)
+        else:
+            return pygame.Rect(self.rect.left - 40, self.rect.y + 10, 40, self.height - 20)
     
     def update(self):
         if self.attack_cooldown > 0:
             self.attack_cooldown -= 1
-           
+#=============================
 class Enemy:
     def __init__(self, x, y, width=40, height=40):
         self.rect = pygame.Rect(x, y, width, height)
@@ -99,165 +87,143 @@ class Enemy:
         self.direction = 1
         self.movement_range = 100
         self.start_x = x
-        self.patrol_speed = 2  # Patrolling speed
-        self.chase_speed = 4  # Chasing speed
-        self.chase_range = 100  # Distance at which enemy starts chasing player
-        self.attack_range = 10  # Distance to attack player
-        self.target = None  # The target (player)
-        #self.health=2
+        self.patrol_speed = 2
+        self.chase_speed = 4
+        self.chase_range = 100
+        self.attack_range = 10
+        self.target = None
         self.attack_delay = 60
+        self.attack_cooldown = 0
         self.damage = 10
 
-
-
     def move(self, player):
-        # Get the direction of movement based on patrolling or chasing
         if self.target:
-            # Chase the player
             if self.rect.x < self.target.rect.x - self.attack_range:
-                self.rect.x += self.chase_speed  # Move towards the player
+                self.rect.x += self.chase_speed
             elif self.rect.x > self.target.rect.x + self.attack_range:
-                self.rect.x -= self.chase_speed  # Move towards the player
+                self.rect.x -= self.chase_speed
         else:
-            # Patrolling logic
             self.rect.x += self.speed * self.direction
             if abs(self.rect.x - self.start_x) >= self.movement_range:
-                self.direction *= -1  # Change direction
+                self.direction *= -1
 
     def draw(self, surface, scroll_x):
         pygame.draw.rect(surface, RED, (self.rect.x - scroll_x, self.rect.y, self.rect.width, self.rect.height))
     
     def check_for_player(self, player):
-        # Check if the player is within the chase range
-        
         if abs(self.rect.centerx - player.rect.centerx) <= self.chase_range:
-            self.target = player  # Start chasing the player
+            self.target = player
         else:
             self.target = None
-    
-            self.attack_cooldown = 0
-            self.attack_delay = 60  # 1 second at 60 FPS
-            self.damage = 10
-            self.attack_cooldown = 0
-            
+
     def update(self, player):
-        # Attack if close enough and cooldown allows
         if self.rect.colliderect(player.rect) and self.attack_cooldown == 0:
             player.take_damage(self.damage)
             self.attack_cooldown = self.attack_delay
-        
-        # Reduce cooldown each frame
+
         if self.attack_cooldown > 0:
             self.attack_cooldown -= 1
-        # Change direction at the bounds
-            self.vel_y = 0
-            self.gravity = 1
-            self.on_ground = False
-# ============================
-# Step 4: Platforms
-# ============================
-platforms = [
-    pygame.Rect(0, HEIGHT - 40, 2000, 40), # ground
-    pygame.Rect(300, HEIGHT - 150, 100, 20), # plate form 1
-    pygame.Rect(500, HEIGHT - 250, 100, 20),# plate form 2
-    pygame.Rect(750, HEIGHT - 180, 150, 20), # plate form 3
-    pygame.Rect(1000, HEIGHT - 300, 100, 20), # plate form 4
-    pygame.Rect(2000,HEIGHT- 5,106,200),
-    ]
 
-# ============================
-# Step 5: Create Player and Enemies
-# ============================
+
+def game_over_screen():
+    font = pygame.font.SysFont("arial", 60)
+    small_font = pygame.font.SysFont("arial", 40)
+
+    try_again_rect = pygame.Rect(WIDTH // 2 - 120, HEIGHT // 2 + 20, 240, 60)
+    quit_rect = pygame.Rect(WIDTH // 2 - 120, HEIGHT // 2 + 100, 240, 60)
+
+    while True:
+        screen.fill((30, 30, 30))
+        title = font.render("Game Over", True, (255, 0, 0))
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 100))
+
+        pygame.draw.rect(screen, (0, 200, 0), try_again_rect)
+        pygame.draw.rect(screen, (200, 0, 0), quit_rect)
+
+        try_again_text = small_font.render("Try Again", True, (255, 255, 255))
+        quit_text = small_font.render("Quit", True, (255, 255, 255))
+
+        screen.blit(try_again_text, (try_again_rect.centerx - try_again_text.get_width() // 2, try_again_rect.centery - try_again_text.get_height() // 2))
+        screen.blit(quit_text, (quit_rect.centerx - quit_text.get_width() // 2, quit_rect.centery - quit_text.get_height() // 2))
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if try_again_rect.collidepoint(event.pos):
+                    return True  # Restart the game
+                elif quit_rect.collidepoint(event.pos):
+                    pygame.quit()
+                    sys.exit()
+
+platforms = [
+    pygame.Rect(0, HEIGHT - 40, 2000, 40),
+    pygame.Rect(300, HEIGHT - 150, 100, 20),
+    pygame.Rect(500, HEIGHT - 250, 100, 20),
+    pygame.Rect(750, HEIGHT - 180, 150, 20),
+    pygame.Rect(1000, HEIGHT - 300, 100, 20),
+    pygame.Rect(2000, HEIGHT - 5, 106, 200),
+]
+
 player = Player(100, HEIGHT - 150)
 enemies = [Enemy(600, HEIGHT - 100), Enemy(1100, HEIGHT - 340)]
 
-# ============================
-# Step 6: Game Loop
-# ============================
 running = True
 while running:
+    # if game_over:
+    #     print("Game Over")
+    #     pygame.quit()
+    #     sys.exit()
+
     if game_over:
-        print("Game Over")
-        pygame.quit()
-        sys.exit()
+        if game_over_screen():
+            # Restart logic
+            player = Player(100, HEIGHT - 150)
+            enemies = [Enemy(600, HEIGHT - 100), Enemy(1100, HEIGHT - 340)]
+            game_over = False
+            continue
+
     clock.tick(60)
     screen.fill(WHITE)
 
-
- 
-    # ============================
-    # Step 7: Event Handling
-    # ============================
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
-    # ============================
-    # Step 8: Input
-    # ============================
     keys = pygame.key.get_pressed()
     player.handle_input(keys)
 
-    attack_rect = None
-    if player.attack:
-        attack_rect = player.attack_area()
+    attack_rect = player.attack_area() if player.attack else None
 
-    # ============================
-    # Step 9: Physics
-    # ============================
     player.apply_physics(platforms)
 
-    # ============================
-    # Step 10: Enemy Collision
-    # ============================
     for enemy in enemies[:]:
-        enemy.check_for_player(player) 
+        enemy.check_for_player(player)
         enemy.update(player)
         if player.rect.colliderect(enemy.rect):
             if player.vel[1] > 0 and player.rect.bottom <= enemy.rect.top + player.vel[1]:
                 enemies.remove(enemy)
-                player.vel[1] = player.jump_power // 2  # Bounce
-       
-        if attack_rect:
-            for enemy in enemies[:]:
-                if attack_rect.colliderect(enemy.rect):
-                    enemies.remove(enemy)  
-    # ============================
-    # Step 11: Camera Scroll
-    # ============================
+                player.vel[1] = player.jump_power // 2
+        
+        if attack_rect and attack_rect.colliderect(enemy.rect):
+            enemies.remove(enemy)
+
     scroll_x = player.rect.x - WIDTH // 2
 
-    # ============================
-    # Step 12: Drawing
-    # ============================
-    
     for enemy in enemies:
-           
-            enemy.move(player)  # Pass player to move method to chase
-            enemy.draw(screen, scroll_x)
-    
-   
-    
+        enemy.move(player)
+        enemy.draw(screen, scroll_x)
+
     for plat in platforms:
         pygame.draw.rect(screen, GREEN, (plat.x - scroll_x, plat.y, plat.width, plat.height))
 
-
     if attack_rect:
         pygame.draw.rect(screen, (0, 0, 0), (attack_rect.x - scroll_x, attack_rect.y, attack_rect.width, attack_rect.height), 2)
-    
-
-   
-    #=========
-    #game over
-    #=========
-   
-
-
-
-
-
 
     player.draw(screen, scroll_x)
-    player.update()  # Reduce attack cooldown
+    player.update()
     pygame.display.flip()
