@@ -85,7 +85,7 @@ class Enemy:
         self.rect = pygame.Rect(x, y, width, height)
         self.speed = 2
         self.direction = 1
-        self.movement_range = 100
+        self.movement_range = 200
         self.start_x = x
         self.patrol_speed = 2
         self.chase_speed = 4
@@ -96,16 +96,58 @@ class Enemy:
         self.attack_cooldown = 0
         self.damage = 10
 
-    def move(self, player):
-        if self.target:
-            if self.rect.x < self.target.rect.x - self.attack_range:
-                self.rect.x += self.chase_speed
-            elif self.rect.x > self.target.rect.x + self.attack_range:
-                self.rect.x -= self.chase_speed
+        # Add gravity and vertical motion
+        self.vel_y = 0
+        self.gravity = 1
+        self.on_ground = False
+
+
+    def move(self, player, platforms):
+        self.vel_y += self.gravity
+        self.rect.y += self.vel_y
+        self.on_ground = False
+
+    # Vertical collision
+        for plat in platforms:
+            if self.rect.colliderect(plat):
+                if self.vel_y > 0 and self.rect.bottom <= plat.top + self.vel_y:
+                    self.rect.bottom = plat.top
+                    self.vel_y = 0
+                    self.on_ground = True
+
+    # Check if player is within chase range and on same platform
+        player_distance = abs(self.rect.centerx - player.rect.centerx)
+        same_platform = abs(self.rect.bottom - player.rect.bottom) < 10
+
+        if player_distance < self.chase_range and same_platform:
+        # Chase player
+            if player.rect.centerx < self.rect.centerx:
+                self.direction = -2
         else:
-            self.rect.x += self.speed * self.direction
+            self.direction = 2
+            move_speed = self.chase_speed
+        
+        # Patrol logic
+            move_speed = self.patrol_speed
             if abs(self.rect.x - self.start_x) >= self.movement_range:
-                self.direction *= -1
+                self.direction *= -2
+
+    # Edge detection before moving
+            next_rect = self.rect.copy()
+            next_rect.x += self.direction * move_speed
+            ground_check_rect = next_rect.move(0, 1)
+            ground_below = any(ground_check_rect.colliderect(plat) for plat in platforms)
+
+            if ground_below:
+                self.rect.x += self.direction * move_speed
+            else:
+                self.direction *= -10
+
+
+
+
+
+       
 
     def draw(self, surface, scroll_x):
         pygame.draw.rect(surface, RED, (self.rect.x - scroll_x, self.rect.y, self.rect.width, self.rect.height))
@@ -124,7 +166,7 @@ class Enemy:
         if self.attack_cooldown > 0:
             self.attack_cooldown -= 1
 
-
+#===============================================
 def game_over_screen():
     font = pygame.font.SysFont("arial", 60)
     small_font = pygame.font.SysFont("arial", 40)
@@ -215,7 +257,7 @@ while running:
     scroll_x = player.rect.x - WIDTH // 2
 
     for enemy in enemies:
-        enemy.move(player)
+        enemy.move(player,platforms)
         enemy.draw(screen, scroll_x)
 
     for plat in platforms:
