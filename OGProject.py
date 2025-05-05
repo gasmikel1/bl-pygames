@@ -87,7 +87,7 @@ class Enemy:
         self.direction = 1
         self.movement_range = 200
         self.start_x = x
-        self.patrol_speed = 2
+        self.patrol_speed = 1
         self.chase_speed = 4
         self.chase_range = 100
         self.attack_range = 10
@@ -120,29 +120,23 @@ class Enemy:
         same_platform = abs(self.rect.bottom - player.rect.bottom) < 10
 
         if player_distance < self.chase_range and same_platform:
-        # Chase player
-            if player.rect.centerx < self.rect.centerx:
-                self.direction = -2
-        else:
-            self.direction = 2
+            self.direction = -1 if player.rect.centerx < self.rect.centerx else 1
             move_speed = self.chase_speed
-        
-        # Patrol logic
+        else:
             move_speed = self.patrol_speed
-            if abs(self.rect.x - self.start_x) >= self.movement_range:
-                self.direction *= -2
+        if abs(self.rect.x - self.start_x) >= self.movement_range:
+            self.direction *= -1
 
     # Edge detection before moving
-            next_rect = self.rect.copy()
-            next_rect.x += self.direction * move_speed
-            ground_check_rect = next_rect.move(0, 1)
-            ground_below = any(ground_check_rect.colliderect(plat) for plat in platforms)
+        next_rect = self.rect.copy()
+        next_rect.x += self.direction * move_speed
+        ground_check_rect = next_rect.move(0, 1)
+        ground_below = any(ground_check_rect.colliderect(plat) for plat in platforms)
 
-            if ground_below:
-                self.rect.x += self.direction * move_speed
-            else:
-                self.direction *= -10
-
+        if ground_below:
+            self.rect.x += self.direction * move_speed
+        else:
+            self.direction *= -1
 
 
 
