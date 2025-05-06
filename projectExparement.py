@@ -6,12 +6,14 @@ WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 pygame.display.set_caption("cool name!")
-game_over = False
 
 WHITE = (255, 255, 255)
 BLUE = (66, 135, 245)
 GREEN = (0, 200, 0)
 RED = (255, 0, 0)
+
+game_over = False
+game_won = False
 
 class Player:
     def __init__(self, x, y):
@@ -58,12 +60,11 @@ class Player:
                     self.rect.bottom = plat.top
                     self.vel[1] = 0
                     self.on_ground = True
-    
+
     def take_damage(self, amount):
         self.health -= amount
         print(f"Player hit! Health: {self.health}")
         if self.health <= 0:
-            print("Game Over")
             global game_over
             game_over = True
 
@@ -75,14 +76,15 @@ class Player:
             return pygame.Rect(self.rect.right, self.rect.y + 10, 40, self.height - 20)
         else:
             return pygame.Rect(self.rect.left - 40, self.rect.y + 10, 40, self.height - 20)
-    
+
     def update(self):
         if self.attack_cooldown > 0:
             self.attack_cooldown -= 1
-#=============================
+
 class Enemy:
     def __init__(self, x, y, width=40, height=40):
         self.rect = pygame.Rect(x, y, width, height)
+        self.health = 30 
         self.speed = 2
         self.direction = 1
         self.movement_range = 200
@@ -90,24 +92,19 @@ class Enemy:
         self.patrol_speed = 1
         self.chase_speed = 4
         self.chase_range = 100
-        self.attack_range = 10
-        self.target = None
         self.attack_delay = 60
         self.attack_cooldown = 0
-        self.damage = 10
-
-        # Add gravity and vertical motion
+        self.damage = 25
         self.vel_y = 0
         self.gravity = 1
         self.on_ground = False
-
+        self.target = None
 
     def move(self, player, platforms):
         self.vel_y += self.gravity
         self.rect.y += self.vel_y
         self.on_ground = False
 
-    # Vertical collision
         for plat in platforms:
             if self.rect.colliderect(plat):
                 if self.vel_y > 0 and self.rect.bottom <= plat.top + self.vel_y:
@@ -115,7 +112,6 @@ class Enemy:
                     self.vel_y = 0
                     self.on_ground = True
 
-    # Check if player is within chase range and on same platform
         player_distance = abs(self.rect.centerx - player.rect.centerx)
         same_platform = abs(self.rect.bottom - player.rect.bottom) < 10
 
@@ -124,10 +120,10 @@ class Enemy:
             move_speed = self.chase_speed
         else:
             move_speed = self.patrol_speed
+
         if abs(self.rect.x - self.start_x) >= self.movement_range:
             self.direction *= -1
 
-    # Edge detection before moving
         next_rect = self.rect.copy()
         next_rect.x += self.direction * move_speed
         ground_check_rect = next_rect.move(0, 1)
@@ -138,13 +134,13 @@ class Enemy:
         else:
             self.direction *= -1
 
-
-
-       
+    def take_damage(self, amount):
+        self.health -= amount
+        return self.health <= 0
 
     def draw(self, surface, scroll_x):
         pygame.draw.rect(surface, RED, (self.rect.x - scroll_x, self.rect.y, self.rect.width, self.rect.height))
-    
+
     def check_for_player(self, player):
         if abs(self.rect.centerx - player.rect.centerx) <= self.chase_range:
             self.target = player
@@ -163,20 +159,12 @@ def draw_health_bar(surface, x, y, health, max_health):
     BAR_WIDTH = 200
     BAR_HEIGHT = 20
     fill = (health / max_health) * BAR_WIDTH
-    border_rect = pygame.Rect(x, y, BAR_WIDTH, BAR_HEIGHT)
-    fill_rect = pygame.Rect(x, y, fill, BAR_HEIGHT)
-    
-    pygame.draw.rect(surface, RED, fill_rect)
-    pygame.draw.rect(surface, (0, 0, 0), border_rect, 2)  # black border
+    pygame.draw.rect(surface, RED, (x, y, BAR_WIDTH, BAR_HEIGHT), 2)
+    pygame.draw.rect(surface, GREEN, (x, y, fill, BAR_HEIGHT))
 
-
-
-
-#===============================================
 def game_over_screen():
     font = pygame.font.SysFont("arial", 60)
     small_font = pygame.font.SysFont("arial", 40)
-
     try_again_rect = pygame.Rect(WIDTH // 2 - 120, HEIGHT // 2 + 20, 240, 60)
     quit_rect = pygame.Rect(WIDTH // 2 - 120, HEIGHT // 2 + 100, 240, 60)
 
@@ -188,11 +176,8 @@ def game_over_screen():
         pygame.draw.rect(screen, (0, 200, 0), try_again_rect)
         pygame.draw.rect(screen, (200, 0, 0), quit_rect)
 
-        try_again_text = small_font.render("Try Again", True, (255, 255, 255))
-        quit_text = small_font.render("Quit", True, (255, 255, 255))
-
-        screen.blit(try_again_text, (try_again_rect.centerx - try_again_text.get_width() // 2, try_again_rect.centery - try_again_text.get_height() // 2))
-        screen.blit(quit_text, (quit_rect.centerx - quit_text.get_width() // 2, quit_rect.centery - quit_text.get_height() // 2))
+        screen.blit(small_font.render("Try Again", True, WHITE), try_again_rect.topleft)
+        screen.blit(small_font.render("Quit", True, WHITE), quit_rect.topleft)
 
         pygame.display.flip()
 
@@ -202,11 +187,42 @@ def game_over_screen():
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if try_again_rect.collidepoint(event.pos):
-                    return True  # Restart the game
+                    return True
                 elif quit_rect.collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
 
+def win_screen():
+    font = pygame.font.SysFont("arial", 60)
+    small_font = pygame.font.SysFont("arial", 40)
+    try_again_rect = pygame.Rect(WIDTH // 2 - 120, HEIGHT // 2 + 20, 240, 60)
+    quit_rect = pygame.Rect(WIDTH // 2 - 120, HEIGHT // 2 + 100, 240, 60)
+
+    while True:
+        screen.fill((20, 20, 60))
+        title = font.render("You Win!", True, (255, 255, 0))
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 100))
+
+        pygame.draw.rect(screen, (0, 200, 0), try_again_rect)
+        pygame.draw.rect(screen, (200, 0, 0), quit_rect)
+
+        screen.blit(small_font.render("Play Again", True, WHITE), try_again_rect.topleft)
+        screen.blit(small_font.render("Quit", True, WHITE), quit_rect.topleft)
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if try_again_rect.collidepoint(event.pos):
+                    return True
+                elif quit_rect.collidepoint(event.pos):
+                    pygame.quit()
+                    sys.exit()
+
+# Game Setup
 platforms = [
     pygame.Rect(0, HEIGHT - 40, 2000, 40),
     pygame.Rect(300, HEIGHT - 150, 100, 20),
@@ -215,26 +231,31 @@ platforms = [
     pygame.Rect(1000, HEIGHT - 300, 100, 20),
     pygame.Rect(2000, HEIGHT - 5, 106, 200),
 ]
-
-#goal = pygame.Rect(1900, HEIGHT - 100, 50, 80)
-#=======================================
+goal = pygame.Rect(1900, HEIGHT - 100, 50, 80)
 player = Player(100, HEIGHT - 150)
-enemies = [Enemy(600, HEIGHT - 100), Enemy(1100, HEIGHT - 340)] 
+enemies = [Enemy(600, HEIGHT - 100), Enemy(1100, HEIGHT - 340)]
 
+# Main Game Loop
 running = True
 while running:
-    # if game_over:
-    #     print("Game Over")
-    #     pygame.quit()
-    #     sys.exit()
-
     if game_over:
         if game_over_screen():
-            # Restart logic
             player = Player(100, HEIGHT - 150)
             enemies = [Enemy(600, HEIGHT - 100), Enemy(1100, HEIGHT - 340)]
             game_over = False
+            game_won = False
             continue
+
+    if game_won:
+        if win_screen():
+            player = Player(100, HEIGHT - 150)
+            enemies = [Enemy(600, HEIGHT - 100), Enemy(1100, HEIGHT - 340)]
+            game_over = False
+            game_won = False
+            continue
+
+    if player.rect.y > HEIGHT + 200:
+        player.take_damage(player.health)
 
     clock.tick(60)
     screen.fill(WHITE)
@@ -246,9 +267,7 @@ while running:
 
     keys = pygame.key.get_pressed()
     player.handle_input(keys)
-
     attack_rect = player.attack_area() if player.attack else None
-
     player.apply_physics(platforms)
 
     for enemy in enemies[:]:
@@ -258,15 +277,18 @@ while running:
             if player.vel[1] > 0 and player.rect.bottom <= enemy.rect.top + player.vel[1]:
                 enemies.remove(enemy)
                 player.vel[1] = player.jump_power // 2
-        
         if attack_rect and attack_rect.colliderect(enemy.rect):
-            enemies.remove(enemy)
+            if enemy.take_damage(15):
+                enemies.remove(enemy)
 
     scroll_x = player.rect.x - WIDTH // 2
 
-   
+    pygame.draw.rect(screen, (255, 215, 0), (goal.x - scroll_x, goal.y, goal.width, goal.height))
+    if player.rect.colliderect(goal):
+        game_won = True
+
     for enemy in enemies:
-        enemy.move(player,platforms)
+        enemy.move(player, platforms)
         enemy.draw(screen, scroll_x)
 
     for plat in platforms:
