@@ -52,12 +52,15 @@ class Player:
         self.attack_delay = 30
         self.attacked_this_frame = False
         self.slashes = []
+        self.facing_right = True  # Track facing direction
 
     def handle_input(self, keys):
         if keys[pygame.K_a]:
             self.vel[0] = -self.speed
+            self.facing_right = False
         elif keys[pygame.K_d]:
             self.vel[0] = self.speed
+            self.facing_right = True
         else:
             self.vel[0] = 0
 
@@ -98,13 +101,13 @@ class Player:
 
     def attack_area(self):
         reach = 60
-        if self.vel[0] >= 0:
+        if self.facing_right:
             return pygame.Rect(self.rect.right, self.rect.y + 10, reach, self.height - 20)
         else:
             return pygame.Rect(self.rect.left - reach, self.rect.y + 10, reach, self.height - 20)
 
     def spawn_slash(self):
-        direction = 1 if self.vel[0] >= 0 else -1
+        direction = 1 if self.facing_right else -1
         x = self.rect.right if direction == 1 else self.rect.left - 40
         y = self.rect.centery - 20
         self.slashes.append(Slash(x, y, direction))
